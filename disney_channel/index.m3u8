@@ -1,4 +1,8 @@
 #EXTM3U
 #EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=2000000
-https://vd265.okcdn.ru/expires/1788354538762/clientType/36/srcIp/40.75.133.101/type/2/mid/15583646271278/id/17112874158638/ms/176.112.172.48/zs/43/srcAg/CHROME/urls/185.180.203.78/oq/0/pr/71/ct/28/sig/oWiVC-l0LVE/ondemand/hls4_17112874158638.CK6Ozc3FxQNAru7y5r4aSOv6o5H______wFQR1gkQa5suNLeZhA.m3u8
+#EXT-X-TARGETDURATION:10
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:10.0,
+https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts
+#EXTINF:10.0,
+https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts
