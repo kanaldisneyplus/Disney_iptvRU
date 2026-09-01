@@ -3,7 +3,6 @@ const path = require('path');
 
 const VK_LIVE_URL = 'https://live.vkvideo.ru/disney';
 
-// Список записей эфиров с VK Live
 const VK_RECORDINGS = [
   'https://live.vkvideo.ru/disney/record/08cc7a20-dd4d-4ae6-a8d7-97615fa91309/records',
   'https://live.vkvideo.ru/disney/record/ad5ad370-9d89-4326-bc23-338837ad272b',
@@ -15,7 +14,6 @@ const VK_RECORDINGS = [
 const OUTPUT_DIR = path.join(__dirname, 'disney_channel');
 const INDEX_M3U8 = path.join(OUTPUT_DIR, 'index.m3u8');
 
-// Парсер HLS-ссылок из страниц VK
 async function getVkHlsStream(url) {
   try {
     const response = await fetch(url, {
@@ -25,15 +23,22 @@ async function getVkHlsStream(url) {
       }
     });
 
-    if (response.ok) {
-      const html = await response.text();
-      const match = html.match(/(https?:\\?\/\\?[^"]+?\.m3u8[^"]*)/i);
-      if (match) {
-        return match[1].replace(/\\/g, '');
-      }
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    // 1. Поиск прямой ссылки .m3u8 в коде
+    let match = html.match(/(https?:\\?\/\\?[^"]+?\.m3u8[^"]*)/i);
+    if (match) {
+      return match[1].replace(/\\/g, '');
+    }
+
+    // 2. Альтернативный поиск HLS внутри JSON-данных страницы VK
+    let jsonMatch = html.match(/https?:[^\s"']+\.m3u8[^\s"']*/ig);
+    if (jsonMatch && jsonMatch.length > 0) {
+      return jsonMatch[0].replace(/\\/g, '');
     }
   } catch (err) {
-    console.error(`Ошибка парсинга ${url}:`, err.message);
+    console.error(`Ошибка при запросе ${url}:`, err.message);
   }
   return null;
 }
@@ -43,32 +48,33 @@ async function update() {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  // 1. Проверяем прямой эфир
+  console.log('Проверка прямого эфира...');
   let targetStreamUrl = await getVkHlsStream(VK_LIVE_URL);
 
   if (targetStreamUrl) {
-    console.log(' [ONLINE] Прямой эфир VK активен:', targetStreamUrl);
+    console.log(' [ONLINE] Прямой эфир обнаружен!');
   } else {
-    console.log(' [OFFLINE] Прямой эфир недоступен. Выбираем одну из 5 записей VK...');
+    console.log(' [OFFLINE] Эфир оффлайн. Подбираем запись VK...');
     
-    // Выбираем случайную запись из вашего списка
-    const selectedRecordUrl = VK_RECORDINGS[Math.floor(Math.random() * VK_RECORDINGS.length)];
-    console.log(' Пробуем загрузить запись:', selectedRecordUrl);
+    // Перебираем записи по очереди или случайно
+    const shuffledRecords = [...VK_RECORDINGS].sort(() => 0.5 - Math.random());
     
-    targetStreamUrl = await getVkHlsStream(selectedRecordUrl);
+    for (const recordUrl of shuffledRecords) {
+      console.log('Пробуем достать поток из:', recordUrl);
+      targetStreamUrl = await getVkHlsStream(recordUrl);
+      if (targetStreamUrl) break;
+    }
 
-    // Если вдруг не удалось распарсить запись, в качестве аварийного варианта берем локальный offline.ts
+    // Резервный вариант, если VK заблокировал парсинг записей
     if (!targetStreamUrl) {
-      console.log(' [FALLBACK] Не удалось достать поток записи VK. Подключаем offline.ts');
+      console.log(' [FALLBACK] Используем локальную заглушку offline.ts');
       targetStreamUrl = 'https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts';
     }
   }
 
-  // Записываем итоговый файл index.m3u8
   const m3u8Content = `#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-STREAM-INF:BANDWIDTH=2000000\n${targetStreamUrl}\n`;
-
   fs.writeFileSync(INDEX_M3U8, m3u8Content, 'utf8');
-  console.log(' [DONE] Плейлист обновлен!');
+  console.log(' [SUCCESS] Файл disney_channel/index.m3u8 успешно записан!');
 }
 
 update();
