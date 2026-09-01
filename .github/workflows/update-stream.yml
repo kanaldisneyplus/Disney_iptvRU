@@ -2,9 +2,9 @@ name: Update VK Live Streams
 
 on:
   schedule:
-    # Запуск в 8:00, 13:00, 17:00 и 21:00 по МСК (5:00, 10:00, 14:00, 18:00 UTC)
+    # Запуск в 08:00, 13:00, 17:00 и 21:00 по МСК (05:00, 10:00, 14:00, 18:00 UTC)
     - cron: '0 5,10,14,18 * * *'
-  workflow_dispatch: # Кнопка ручного запуска
+  workflow_dispatch: # Кнопка для ручного запуска в Actions
 
 permissions:
   contents: write
@@ -30,5 +30,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add disney_channel/index.m3u8
-          git commit -m "Scheduled update for Disney Channel stream link" || exit 0
+          git commit -m "Scheduled stream link update" || exit 0
           git push
