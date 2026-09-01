@@ -3,12 +3,8 @@ const path = require('path');
 
 const VK_CHANNEL_URL = 'https://live.vkvideo.ru/disney';
 
-// Список записей эфира в новом репозитории
-const RECORDINGS = [
-  'https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts',
-  'https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/record1.ts',
-  'https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/record2.ts'
-];
+// Прямая ссылка на ваш готовый HLS-плейлист с кусочками .ts
+const OFFLINE_HLS_URL = 'https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/hls/playlist.m3u8';
 
 const OUTPUT_DIR = path.join(__dirname, 'disney_channel');
 const INDEX_M3U8 = path.join(OUTPUT_DIR, 'index.m3u8');
@@ -41,26 +37,9 @@ async function update() {
   }
 
   const activeStreamUrl = await getVkLiveStream();
-  let m3u8Content = '';
+  const streamUrl = activeStreamUrl ? activeStreamUrl : OFFLINE_HLS_URL;
 
-  if (activeStreamUrl) {
-    console.log(' [ONLINE] Подключение к прямому эфиру VK:', activeStreamUrl);
-    m3u8Content = `#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-STREAM-INF:BANDWIDTH=2000000\n${activeStreamUrl}\n`;
-  } else {
-    // Выбираем запись канала во время оффлайна
-    const randomRecord = RECORDINGS[Math.floor(Math.random() * RECORDINGS.length)];
-    console.log(' [OFFLINE] Канал оффлайн. Подключаем запись:', randomRecord);
-
-    m3u8Content = `#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:0
-#EXTINF:10.0,
-${randomRecord}
-#EXTINF:10.0,
-${randomRecord}
-`;
-  }
+  const m3u8Content = `#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-STREAM-INF:BANDWIDTH=2000000\n${streamUrl}\n`;
 
   fs.writeFileSync(INDEX_M3U8, m3u8Content, 'utf8');
   console.log(' [DONE] Плейлист обновлен!');
