@@ -1,0 +1,34 @@
+name: Update VK Live Streams
+
+on:
+  schedule:
+    # Запуск в 8:00, 13:00, 17:00 и 21:00 по МСК (5:00, 10:00, 14:00, 18:00 UTC)
+    - cron: '0 5,10,14,18 * * *'
+  workflow_dispatch: # Кнопка ручного запуска
+
+permissions:
+  contents: write
+
+jobs:
+  update-links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Чтение репозитория
+        uses: actions/checkout@v4
+
+      - name: Настройка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Запуск скрипта обновления
+        run: node update.js
+
+      - name: Коммит и push обновленного index.m3u8
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add disney_channel/index.m3u8
+          git commit -m "Scheduled update for Disney Channel stream link" || exit 0
+          git push
