@@ -1,8 +1,4 @@
 #EXTM3U
 #EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:0
-#EXTINF:10.0,
-https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts
-#EXTINF:10.0,
-https://raw.githubusercontent.com/kanaldisneyplus/Disney_iptvRU/main/offline.ts
+#EXT-X-STREAM-INF:BANDWIDTH=2000000
+https://vsd183.okcdn.ru/cmaf/18339552430638/sig/d0asqWc5Xck/expires/1791632320473/srcIp/4.249.19.198/urls/95.163.35.101/clientType/36/srcAg/UNKNOWN/mid/16295933200174/get/hls_16295933200174.CPGfqA0joI8.m3u8
